@@ -3,13 +3,15 @@ const app = express();
 const port = 3000;
 const fs = require("fs");
 
-//1 Define endpoint for /
-app.get('/', (req, res) => {
+// TP2
+
+//1 Define endpoint for /api
+app.get("/api", (req, res) => {
 	res.send("Hello World, welcome to my EPFBook application!")
 });
 
-//2 Define endpoint for /student
-app.get("/students", (req, res) => {
+//2 Define endpoint for /api/student
+app.get("/api/students", (req, res) => {
 	// Sending the array of student information
 	res.send([
 		{ name: "MOHAMOUD Anes", school: "EPF" },
@@ -19,8 +21,8 @@ app.get("/students", (req, res) => {
 });
 
 
-//3 Define endpoint for /student-csv
-app.get("/students-csv", (req, res) => {
+//3 Define endpoint for /api/student-csv
+app.get("/api/students-csv", (req, res) => {
 	// Read the CSV file
 	fs.readFile("./students.csv", "utf8", (err, data) => {
 	  res.send(data);
@@ -28,7 +30,7 @@ app.get("/students-csv", (req, res) => {
 });
 
 //4 This is an advanced version that parses the CSV content
-app.get("/students-csv-parsed", (req, res) => {
+app.get("/api/students-csv-parsed", (req, res) => {
 	const rowSeparator = "\n";
 	const cellSeparator = ",";
 	// Read the CSV file
@@ -52,7 +54,7 @@ app.get("/students-csv-parsed", (req, res) => {
 
 
 app.use(express.json());
-app.post("/students/create", (req, res) => {
+app.post("/api/students/create", (req, res) => {
 	console.log(req.body);
 	const csvLine = `\n${req.body.name},${req.body.school}`;
 	console.log(csvLine);
@@ -64,6 +66,25 @@ app.post("/students/create", (req, res) => {
 			res.send("ok");
 		}
 	);
+});
+
+
+//TP3
+
+const path = require("path")
+
+// Define endpoint for the home page
+app.get("/", (req, res) => {
+	res.sendFile(path.join(__dirname,"./views/home.html"))
+});
+
+app.set('views', './views'); 
+app.set('view engine', 'ejs');
+
+// Define endpoint for /students
+app.get("/students", (req, res) => {
+	res.render("students", { students: [{ name: "MOHAMOUD ROBLEH Anes", school: "EPF"}]
+	});
 });
 
 app.listen(port, () => {
