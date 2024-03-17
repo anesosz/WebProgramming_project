@@ -83,7 +83,9 @@ app.set('view engine', 'ejs');
 
 // Define endpoint for /students
 app.get("/students", (req, res) => {
-	res.render("students", { students: [{ name: "MOHAMOUD ROBLEH Anes", school: "EPF"}]
+	// Read the CSV file
+	fs.readFile("./students.csv", "utf8", (err, data) => {
+		res.render("students", { data });
 	});
 });
 
