@@ -21,7 +21,7 @@ app.get("/api/students", (req, res) => {
 });
 
 
-//3 Define endpoint for /api/student-csv
+//3 Define endpoint for /api/student-csv 
 app.get("/api/students-csv", (req, res) => {
 	// Read the CSV file
 	fs.readFile("./students.csv", "utf8", (err, data) => {
@@ -73,7 +73,7 @@ app.post("/api/students/create", (req, res) => {
 
 const path = require("path")
 
-// Define endpoint for the home page
+//1 Define endpoint for the home page
 app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname,"./views/home.html"))
 });
@@ -81,14 +81,105 @@ app.get("/", (req, res) => {
 app.set('views', './views'); 
 app.set('view engine', 'ejs');
 
-// Define endpoint for /students
+// Define a function to read students from CSV file
+function getStudentsFromCsvfile(callback) {
+    fs.readFile("./students.csv", "utf8", (err, data) => {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        // Split CSV data into rows
+        const rows = data.trim().split('\n');
+
+        // Parse each row into a student object, skipping the header row
+        const students = rows.slice(1).map(row => {
+            const [name, school] = row.split(','); // Split each row into name and school
+            return { name: name.trim(), school: school.trim() }; // Trim whitespace from name and school
+        });
+
+        callback(null, students);
+    });
+};
+
+
+
+//2 Define endpoint for /students
 app.get("/students", (req, res) => {
 	// Read the CSV file
-	fs.readFile("./students.csv", "utf8", (err, data) => {
-		res.render("students", { data });
-	});
+	getStudentsFromCsvfile((err, students) => {
+		if (err) {
+			console.error(err);
+			res.send("ERROR");
+		}
+		res.render("students", { students });
+		});
 });
 
+// Middleware to parse urlencoded form data
+app.use(express.urlencoded({ extended: true }));
+
+
+//3 Define GET endpoint to render create-student view
+app.get("/students/create", (req, res) => {
+    // Check if a query parameter 'created' is present
+    const created = req.query.created === '1';
+
+    res.render("create-student", { created });
+});
+
+
+
+//4 Define POST endpoint to handle form submission and redirect to the form
+app.post("/students/create", (req, res) => {
+    const name = req.body.name;
+    const school = req.body.school;
+
+    // Call the function to write student data to the CSV file
+    writeToCsv(name, school, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send("Internal Server Error");
+        } else {
+            // Redirect to the GET endpoint for displaying the form
+            res.redirect("/students/create?created=1");
+        }
+    });
+});
+
+// Reuse code from /api/students/create in the /api/students/create endpoint
+app.post("/api/students/create", (req, res) => {
+    const name = req.body.name;
+    const school = req.body.school;
+
+    // Call the function to write student data to the CSV file
+    writeToCsv(name, school, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send("Internal Server Error");
+        } else {
+            res.send("ok");
+        }
+    });
+});
+
+// Define a function to write student data to the CSV file
+function writeToCsv(name, school, callback) {
+    const csvLine = `\n${name},${school}`;
+    fs.writeFile(
+        "./students.csv",
+        csvLine,
+        { flag: "a" },
+        (err) => {
+            if (err) {
+                callback(err);
+            } else {
+                callback(null);
+            }
+        }
+    );
+}
+
 app.listen(port, () => {
-	console.log(`app listening on port ${port}`)
+    console.log(`app listening on port ${port}`)
 });
