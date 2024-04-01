@@ -69,8 +69,15 @@ app.post("/api/students/create", (req, res) => {
 });
 
 
+
 //TP3
 
+//Enable EJS templates
+app.set('views', './views');
+app.set('view engine', 'ejs');
+
+// Enable static files loading (CSS or HTML)
+app.use(express.static("public"));
 const path = require("path")
 
 //1 Define endpoint for the home page
@@ -78,8 +85,6 @@ app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname,"./views/home.html"))
 });
 
-app.set('views', './views'); 
-app.set('view engine', 'ejs');
 
 // Define a function to read students from CSV file
 function getStudentsFromCsvfile(callback) {
@@ -115,9 +120,6 @@ app.get("/students", (req, res) => {
 		res.render("students", { students });
 		});
 });
-
-// Middleware to parse urlencoded form data
-app.use(express.urlencoded({ extended: true }));
 
 
 //3 Define GET endpoint to render create-student view
@@ -180,6 +182,141 @@ function writeToCsv(name, school, callback) {
     );
 }
 
+
+
+
+//TP4
+
+
+const basicAuth = require("express-basic-auth");
+const bcrypt = require("bcrypt");
+
+// Setup basic authentication
+app.use(
+    basicAuth({
+      // Basic hard-coded version:
+      //users: { admin: "supersecret" },
+      // From environment variables:
+      // users: { [process.env.ADMIN_USERNAME]: process.env.ADMIN_PASSWORD },
+      // Custom auth based on a file
+      //authorizer: clearPasswordAuthorizer,
+      // Final auth, based on a file with encrypted passwords
+      authorizer: encryptedPasswordAuthorizer,
+      // Our authorization schema needs to read a file: it is asynchronous
+      authorizeAsync: true,
+      challenge: true,
+    })
+  );
+// Custom async authorizer function
+const csv = require("csv-parser");
+
+// Function to parse a CSV file with headers
+const parseCsvWithHeader = (filePath, callback) => {
+    const users = [];
+    fs.createReadStream(filePath)
+        .pipe(csv())
+        .on("data", (row) => {
+            users.push(row);
+        })
+        .on("end", () => {
+            callback(null, users);
+        })
+        .on("error", (error) => {
+            callback(error, null);
+        });
+};
+
+// Auth
+
+/**
+ * Basic authorizer for "express-basic-auth", storing users in a CSV file
+ *
+ * Read the password without encoding
+ */
+const clearPasswordAuthorizer = (username, password, cb) => {
+    if (!username || !password) {
+      return cb(new Error("Username or password were not defined"), false);
+    }
+    // Parse the CSV file: this is very similar to parsing students!
+    parseCsvWithHeader("./users-clear.csv", (err, users) => {
+      console.log(users);
+      // Check that our current user belong to the list
+      const storedUser = users.find((possibleUser) => {
+        if (!possibleUser.username) {
+          console.warn(
+            "Found a user with no username in users-clear.csv",
+            possibleUser
+          );
+          return false;
+        }
+        // NOTE: a simple comparison with === is possible but less safe
+        return basicAuth.safeCompare(username, possibleUser.username);
+      });
+  
+      if (!storedUser) {
+        cb(null, false);
+      } else if (!storedUser.password) {
+        console.warn(
+          "Found a user with no password in users-clear.csv",
+          storedUser
+        );
+        cb(null, false);
+      } else if (!basicAuth.safeCompare(password, storedUser.password)) {
+        cb(null, false);
+      } else {
+        // success: user is found and have the right password
+        cb(null, true);
+      }
+    });
+  };
+
+
+/**
+ * Authorizer function of basic auth, that handles encrypted passwords
+ * @param {*} username Provided username
+ * @param {*} password Provided password
+ * @param {*} cb (error, isAuthorized)
+ */
+const encryptedPasswordAuthorizer = (username, password, cb) => {
+  if (!username || !password) {
+    return cb(new Error("Username or password were not defined"), false);
+  }
+  // Parse the CSV file: this is very similar to parsing students!
+  parseCsvWithHeader("./users.csv", (err, users) => {
+    // Check that our current user belong to the list
+    const storedUser = users.find((possibleUser) => {
+      if (!possibleUser.username) {
+        console.warn(
+          "Found a user with no username in users-clear.csv",
+          possibleUser
+        );
+        return false;
+      }
+      // NOTE: a simple comparison with === is possible but less safe
+      return basicAuth.safeCompare(possibleUser.username, username);
+    });
+    if (!storedUser) {
+      cb(null, false);
+    } else if (!storedUser.password) {
+      console.warn(
+        "Found a user with no password in users-clear.csv",
+        storedUser
+      );
+      cb(null, false);
+    } else {
+      // now we check the password
+      // bcrypt handles the fact that storedUser password is encrypted
+      // it is asynchronous, because this operation is long
+      // so we pass the callback as the last parameter
+      bcrypt.compare(password, storedUser.password, cb);
+    }
+  });
+};
+
+
 app.listen(port, () => {
     console.log(`app listening on port ${port}`)
 });
+
+
+
