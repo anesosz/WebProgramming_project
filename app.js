@@ -190,25 +190,8 @@ function writeToCsv(name, school, callback) {
 
 const basicAuth = require("express-basic-auth");
 const bcrypt = require("bcrypt");
-
-// Setup basic authentication
-app.use(
-    basicAuth({
-      // Basic hard-coded version:
-      //users: { admin: "supersecret" },
-      // From environment variables:
-      // users: { [process.env.ADMIN_USERNAME]: process.env.ADMIN_PASSWORD },
-      // Custom auth based on a file
-      //authorizer: clearPasswordAuthorizer,
-      // Final auth, based on a file with encrypted passwords
-      authorizer: encryptedPasswordAuthorizer,
-      // Our authorization schema needs to read a file: it is asynchronous
-      authorizeAsync: true,
-      challenge: true,
-    })
-  );
-// Custom async authorizer function
 const csv = require("csv-parser");
+
 
 // Function to parse a CSV file with headers
 const parseCsvWithHeader = (filePath, callback) => {
@@ -226,7 +209,47 @@ const parseCsvWithHeader = (filePath, callback) => {
         });
 };
 
-// Auth
+/**
+ * Authorizer function of basic auth, that handles encrypted passwords
+ * @param {*} username Provided username
+ * @param {*} password Provided password
+ * @param {*} cb (error, isAuthorized)
+ */
+const encryptedPasswordAuthorizer = (username, password, cb) => {
+  if (!username || !password) {
+    return cb(new Error("Username or password were not defined"), false);
+  }
+  // Parse the CSV file: this is very similar to parsing students!
+  parseCsvWithHeader("./users.csv", (err, users) => {
+    // Check that our current user belong to the list
+    const storedUser = users.find((possibleUser) => {
+      if (!possibleUser.username) {
+        console.warn(
+          "Found a user with no username in users-clear.csv",
+          possibleUser
+        );
+        return false;
+      }
+      // NOTE: a simple comparison with === is possible but less safe
+      return basicAuth.safeCompare(possibleUser.username, username);
+    });
+    if (!storedUser) {
+      cb(null, false);
+    } else if (!storedUser.password) {
+      console.warn(
+        "Found a user with no password in users-clear.csv",
+        storedUser
+      );
+      cb(null, false);
+    } else {
+      // now we check the password
+      // bcrypt handles the fact that storedUser password is encrypted
+      // it is asynchronous, because this operation is long
+      // so we pass the callback as the last parameter
+      bcrypt.compare(password, storedUser.password, cb);
+    }
+  });
+};
 
 /**
  * Basic authorizer for "express-basic-auth", storing users in a CSV file
@@ -270,48 +293,30 @@ const clearPasswordAuthorizer = (username, password, cb) => {
     });
   };
 
+// Setup basic authentication
+app.use(
+    basicAuth({
+      authorizer: encryptedPasswordAuthorizer,
+      authorizeAsync: true,
+      challenge: true,
+    })
+  );
 
-/**
- * Authorizer function of basic auth, that handles encrypted passwords
- * @param {*} username Provided username
- * @param {*} password Provided password
- * @param {*} cb (error, isAuthorized)
- */
-const encryptedPasswordAuthorizer = (username, password, cb) => {
-  if (!username || !password) {
-    return cb(new Error("Username or password were not defined"), false);
-  }
-  // Parse the CSV file: this is very similar to parsing students!
-  parseCsvWithHeader("./users.csv", (err, users) => {
-    // Check that our current user belong to the list
-    const storedUser = users.find((possibleUser) => {
-      if (!possibleUser.username) {
-        console.warn(
-          "Found a user with no username in users-clear.csv",
-          possibleUser
-        );
-        return false;
-      }
-      // NOTE: a simple comparison with === is possible but less safe
-      return basicAuth.safeCompare(possibleUser.username, username);
-    });
-    if (!storedUser) {
-      cb(null, false);
-    } else if (!storedUser.password) {
-      console.warn(
-        "Found a user with no password in users-clear.csv",
-        storedUser
-      );
-      cb(null, false);
-    } else {
-      // now we check the password
-      // bcrypt handles the fact that storedUser password is encrypted
-      // it is asynchronous, because this operation is long
-      // so we pass the callback as the last parameter
-      bcrypt.compare(password, storedUser.password, cb);
-    }
-  });
-};
+
+// using secure cookies
+app.post("/api/login", (req, res) => {
+  console.log("current cookies:", req.cookies);
+  // We assume that you check if the user can login based on "req.body"
+  // and then generate an authentication token
+  const token = "FOOBAR";
+  const tokenCookie = {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 60 * 60 * 1000),
+  };
+  res.cookie("auth-token", token, tokenCookie);
+  res.send("OK");
+});
 
 
 app.listen(port, () => {
