@@ -319,9 +319,17 @@ app.post("/api/login", (req, res) => {
 });
 
 
+
+// TP5
+
+// Route to render students_data.ejs
+app.get('/students/data', (req, res) => {
+  res.render('students_data');
+});
+
 app.listen(port, () => {
     console.log(`app listening on port ${port}`)
 });
 
 
-
+  
