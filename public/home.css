@@ -61,3 +61,18 @@ nav ul li a {
 nav ul li a:hover {
     color: red; /
 }
+
+/* Reduce font size for smaller screens */
+@media (max-width: 1000px) {
+  h1 {
+    font-size: 24px; 
+  }
+
+  .big-text {
+    font-size: 16px; 
+  }
+
+  .small-text {
+    font-size: 12px; 
+  }
+}
