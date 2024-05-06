@@ -1,24 +1,31 @@
+<!-- students.ejs -->
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List of Students</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main>
-    <h1>Students</h1>
-    <p class="long-text">
-      "Le code est comme le café : il peut être amer au début, mais une fois que vous en avez pris l'habitude, vous ne pouvez plus vous en passer. Et parfois, vous avez besoin d'une bonne pause pour éviter le plantage du système, tout comme vous avez besoin d'une pause café pour éviter le plantage de votre esprit."
-    </p>
-    <ul id="student-list">
-      <% students.forEach(function(student) { %>
-        <li><%= student.name %> | <%= student.school %></li>
-      <% }) %>
-    </ul>
-       <!-- Test button -->
-       <button id="test">Click me</button>
-  </main>
+    <main>
+        <h1>Students</h1>
+        <p class="long-text">
+            "Le code est comme le café : il peut être amer au début, mais une fois que vous en avez pris l'habitude, vous ne pouvez plus vous en passer. Et parfois, vous avez besoin d'une bonne pause pour éviter le plantage du système, tout comme vous avez besoin d'une pause café pour éviter le plantage de votre esprit."
+        </p>
+        <ul id="student-list">
+            <% students.forEach(function(student, index) { %>
+                <li>
+                    <!-- Add a link to the student details page for each student -->
+                    <a href="/students/<%= index %>"><%= student.name %> | <%= student.school %></a>
+                </li>
+            <% }) %>
+        </ul>
+        <!-- Test button -->
+        <button id="test">Click me</button>
+    </main>
   
-  <!-- JavaScript code -->
-  <script src="/students.js"></script>
+    <!-- JavaScript code -->
+    <script src="/students.js"></script>
 </body>
 </html>

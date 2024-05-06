@@ -3,23 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to My Application</title>
-    <link rel="stylesheet" href="home.css">
-    <script src="app.js" defer></script>
+    <title>Welcome to CaféLink</title>
+    <link rel="stylesheet" href="/home.css">
 </head>
 <body>
+    <!-- Background image -->
     <div class="background-image"></div>
+
+    <!-- Content -->
     <div class="content">
-        <h1>Welcome to my application</h1>
-        <p class="big-text">Click below to explore:</p>
+        <!-- School logo -->
+        <img src="school_logo.png" alt="School Logo" class="school-logo">
+
+        <!-- CaféMeet logo -->
+        <img src="cafemeet.png" alt="CaféMeet Logo" class="logo cafe-meet-logo">
+
+        <!-- Title -->
+        <h1>Welcome to CaféLink</h1>
+
+        <!-- Description -->
+        <p class="big-text">Connect with students from your school or other schools</p>
+
+        <!-- Navigation -->
         <nav>
-            <ul>
-                <li><a id="students-link" href="/students">Click here to see student information</a></li>
-                <li><a id="create-student-link" href="/students/create">Click here to create a student</a></li>
-                <li><a id="data-viz-link" href="/students/data">Click here to see DataViz</a></li>
+            <ul class="nav-links">
+                <li><a href="/students">Click here to see student information</a></li>
+                <li><a href="/students/create">Click here to create a student</a></li>
+                <li><a href="/students/data">Click here to see DataViz</a></li>
             </ul>
         </nav>
-        <p class="small-text">If there is any problem, contact me : anesos2000@gmail.com</p>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>If you need assistance, contact us at <a href="mailto:anesos2000@gmail.com">anesos2000@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>

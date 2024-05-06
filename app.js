@@ -85,28 +85,39 @@ app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname,"./views/home.html"))
 });
 
-
 // Define a function to read students from CSV file
 function getStudentsFromCsvfile(callback) {
-    fs.readFile("./students.csv", "utf8", (err, data) => {
-        if (err) {
-            callback(err);
-            return;
-        }
+  fs.readFile("./students.csv", "utf8", (err, data) => {
+      if (err) {
+          callback(err);
+          return;
+      }
 
-        // Split CSV data into rows
-        const rows = data.trim().split('\n');
+      // Split CSV data into rows
+      const rows = data.trim().split('\n');
 
-        // Parse each row into a student object, skipping the header row
-        const students = rows.slice(1).map(row => {
-            const [name, school] = row.split(','); // Split each row into name and school
-            return { name: name.trim(), school: school.trim() }; // Trim whitespace from name and school
-        });
+      // Parse each row into a student object, skipping the header row
+      const students = rows.slice(1).map(row => {
+          const [name, school] = row.split(','); // Split each row into name and school
+          return { name: name.trim(), school: school.trim() }; // Trim whitespace from name and school
+      });
 
-        callback(null, students);
-    });
-};
+      callback(null, students);
+  });
+}
 
+// Define a function to write student data to the CSV file
+function writeToCsv(students, callback) {
+  const csvLines = students.map(student => `${student.name},${student.school}`);
+  const csvData = `name,school\n${csvLines.join('\n')}`;
+  fs.writeFile("./students.csv", csvData, (err) => {
+      if (err) {
+          callback(err);
+          return;
+      }
+      callback(null);
+  });
+}
 
 
 //2 Define endpoint for /students
@@ -165,22 +176,6 @@ app.post("/api/students/create", (req, res) => {
     });
 });
 
-// Define a function to write student data to the CSV file
-function writeToCsv(name, school, callback) {
-    const csvLine = `\n${name},${school}`;
-    fs.writeFile(
-        "./students.csv",
-        csvLine,
-        { flag: "a" },
-        (err) => {
-            if (err) {
-                callback(err);
-            } else {
-                callback(null);
-            }
-        }
-    );
-}
 
 
 
@@ -326,6 +321,72 @@ app.post("/api/login", (req, res) => {
 app.get('/students/data', (req, res) => {
   res.render('students_data');
 });
+
+//TP6/Exam
+
+// Define a route to render student details
+app.get("/students/:id", (req, res) => {
+  const studentId = req.params.id;
+
+  // Read the CSV file to get the list of students
+  getStudentsFromCsvfile((err, students) => {
+      if (err) {
+          console.error(err);
+          res.status(500).send("Internal Server Error");
+          return;
+      }
+
+      // Check if the requested studentId is valid
+      if (studentId < 0 || studentId >= students.length) {
+          res.status(404).send("Student not found");
+          return;
+      }
+
+      // Get the correct student from the list
+      const student = students[studentId];
+
+      // Render the student_details.ejs view with the student data
+      res.render("student_details", { student });
+  });
+});
+
+
+app.post("/students/:id", (req, res) => {
+  const studentId = req.params.id;
+  const updatedName = req.body.name;
+  const updatedSchool = req.body.school;
+
+  // Read the CSV file to get the list of students
+  getStudentsFromCsvfile((err, students) => {
+      if (err) {
+          console.error(err);
+          res.status(500).send("Internal Server Error");
+          return;
+      }
+
+      // Check if the requested studentId is valid
+      if (studentId < 0 || studentId >= students.length) {
+          res.status(404).send("Student not found");
+          return;
+      }
+
+      // Update the student object
+      students[studentId].name = updatedName;
+      students[studentId].school = updatedSchool;
+
+      // Write the updated student data back to the CSV file
+      writeToCsv(students, (err) => {
+          if (err) {
+              console.error(err);
+              res.status(500).send("Internal Server Error");
+              return;
+          }
+
+          res.redirect("/students/" + studentId);
+      });
+  });
+});
+
 
 app.listen(port, () => {
     console.log(`app listening on port ${port}`)

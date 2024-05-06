@@ -27,3 +27,9 @@ To run EPFBOOK locally on your machine, follow these steps:
    npm run dev
 
 This command will start the server and launch the application. You can then access the application in your web browser at http://localhost:3000.
+
+## Rick and Morty Character
+
+The character with ID 5 in the Rick and Morty API is **"Jerry Smith"**. 
+
+To find this information, we made a request to the API endpoint `/api/character/5`, which returned details about the character with ID 5.
