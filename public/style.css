@@ -10,9 +10,9 @@ ul {
     background-color : rgb(160, 207, 224);
 }
 
-/*Hide long text on love*/
+/*Hide long text on love*
 @media (max-width: 1000px) {
     p.long-text {
         display: none;
     }
-}
+}*/

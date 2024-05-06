@@ -61,18 +61,25 @@ nav ul li a {
 nav ul li a:hover {
     color: red; /
 }
-
+nav ul li a {
+    white-space: nowrap; /* Prevent the text from wrapping onto multiple lines */
+  }
+  
 /* Reduce font size for smaller screens */
 @media (max-width: 1000px) {
   h1 {
-    font-size: 24px; 
+    font-size: 30px; 
   }
 
   .big-text {
-    font-size: 16px; 
+    font-size: 24px; 
   }
 
   .small-text {
     font-size: 12px; 
+  }
+
+  nav ul li a {
+    font-size: 16px; 
   }
 }
