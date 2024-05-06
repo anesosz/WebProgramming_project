@@ -1,4 +1,8 @@
-{
+{"scripts": {
+  "mongo": "docker run -p 27017:27017 mongo",
+  "dev": "nodemon app.js"
+},
+
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
