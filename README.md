@@ -28,6 +28,25 @@ To run EPFBOOK locally on your machine, follow these steps:
 
 This command will start the server and launch the application. You can then access the application in your web browser at http://localhost:3000.
 
+## Building and Running with Docker
+
+To build and run EPFBOOK using Docker, follow these steps:
+
+1. Make sure you have Docker installed on your machine.
+   Open Docker
+
+
+2. Go to the root directory of the project and build the Docker image using the provided Dockerfile:
+
+   ```bash
+   docker build -t epfbook-app .
+
+3. Once the build is complete, you can run the Docker container:
+   ```bash
+   docker run -p 3000:3000 epfbook-app
+
+This command will start the EPFBOOK application inside a Docker container, and you can access it in your web browser at http://localhost:3000.
+
 ## Rick and Morty Character
 
 The character with ID 5 in the Rick and Morty API is **"Jerry Smith"**. 
