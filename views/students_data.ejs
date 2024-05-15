@@ -1,14 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <!-- Include C3.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
-  <!-- Include C3.js CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css">
-  <script src="/data.js"> </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart with Home Button</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css">
+    <script src="/data.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #chart {
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        .home-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .home-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <div id="chart"></div>
+    <h1>Distribution of Stress Busters Concerning Students</h1>
+    <div id="chart"></div>
+    <a href="/" class="home-button">Home</a>
 </body>
 </html>

@@ -360,53 +360,50 @@ app.get("/students/:id", (req, res) => {
   });
 });
 
-
+// Define POST endpoint to handle form submission for updating student
 app.post("/students/:id", (req, res) => {
-  const studentId = parseInt(req.params.id, 10);
-  const updatedName = req.body.name;
-  const updatedSchool = req.body.school;
+    const studentId = req.params.id;
+    const { name, school } = req.body;
 
-  console.log("Received POST request to update student with ID:", studentId);
-  console.log("Updated Name:", updatedName);
-  console.log("Updated School:", updatedSchool);
+    console.log("Received update request for student ID:", studentId);
+    console.log("New name:", name);
+    console.log("New school:", school);
 
-  // Read the CSV file to get the list of students
-  getStudentsFromCsvfile((err, students) => {
-      if (err) {
-          console.error("Error reading students from CSV file:", err);
-          res.status(500).send("Internal Server Error");
-          return;
-      }
+    // Read the CSV file to get the list of students
+    getStudentsFromCsvfile((err, students) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send("Internal Server Error");
+            return;
+        }
 
-      console.log("Successfully read students from CSV file.");
+        // Find the index of the student with the given ID
+        const studentIndex = students.findIndex(student => student.id === parseInt(studentId));
 
-      // Check if the requested studentId is valid
-      if (studentId < 0 || studentId >= students.length) {
-          console.error("Student not found with ID:", studentId);
-          res.status(404).send("Student not found");
-          return;
-      }
+        if (studentIndex === -1) {
+            console.log("Student not found with ID:", studentId);
+            res.status(404).send("Student not found");
+            return;
+        }
 
-      // Update the student object
-      students[studentId].name = updatedName;
-      students[studentId].school = updatedSchool;
+        // Update the student's name and school
+        students[studentIndex].name = name;
+        students[studentIndex].school = school;
 
-      console.log("Updated student details:", students[studentId]);
+        console.log("Updated student:", students[studentIndex]);
 
-      // Write the updated student data back to the CSV file
-      writeToCsv(students, (err) => {
-          if (err) {
-              console.error("Error writing updated student to CSV file:", err);
-              res.status(500).send("Internal Server Error");
-              return;
-          }
-
-          console.log("Successfully updated student in CSV file.");
-          res.redirect("/students/" + studentId);
-      });
-  });
+        // Write the updated student data to the CSV file
+        writeToCsv(students, (err) => {
+            if (err) {
+                console.error(err);
+                res.status(500).send("Internal Server Error");
+                return;
+            }
+            console.log("Student information updated successfully");
+            res.redirect(`/students/${studentId}?updated=1`);
+        });
+    });
 });
-
 
 
 app.listen(port, () => {
